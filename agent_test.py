@@ -143,7 +143,7 @@ class MinimaxTest(unittest.TestCase):
 
 
 class AlphaBetaTest(unittest.TestCase):
-    """Unit tests for minimax algorithm test"""
+    """Unit tests for alpha beta algorithm test"""
 
     def setUp(self):
         reload(game_agent)
@@ -162,6 +162,77 @@ class AlphaBetaTest(unittest.TestCase):
         coordinates = self.alpha_beta_player.alphabeta(board, DEPTH)
 
         self.assertEquals(coordinates, (-1, -1), 'The coordinates when no moves left is -1,-1')
+
+    def test_return_the_action_with_max_value(self):
+        node = GameBuilder(self.player1, self.player1).create_game_tree(1, 3)
+
+        self.alpha_beta_player.score = MagicMock(side_effect=[float("-inf"), float("inf"), float("-inf")])
+        coordinates = self.alpha_beta_player.alphabeta(node.execute(), DEPTH)
+
+        self.assertEquals(coordinates, (2, 1), 'The coordinates when no moves left is 2,1')
+
+    def test_return_the_first_move_if_no_chance(self):
+        node = GameBuilder(self.player1, self.player1).create_game_tree(1, 3)
+
+        self.alpha_beta_player.score = MagicMock(side_effect=[float("-inf"), float("-inf"), float("-inf")])
+        coordinates = self.alpha_beta_player.alphabeta(node.execute(), DEPTH)
+
+        self.assertEquals(coordinates, (1, 0), 'The coordinates when no moves left is 1,0')
+
+    def test_return_the_move_with_max_value(self):
+        node = GameBuilder(self.player1, self.player1).create_game_tree(1, 3)
+
+        self.alpha_beta_player.score = MagicMock(side_effect=[float("-inf"), float("-inf"), float("inf")])
+        coordinates = self.alpha_beta_player.alphabeta(node.execute(), DEPTH)
+
+        self.assertEquals(coordinates, (3, 2), 'The coordinates when no moves left is 3,2')
+
+    def test_return_the_move_with_max_of_min_values(self):
+        node = GameBuilder(self.player1, self.player1).create_game_tree(1, 2)
+
+        self.alpha_beta_player.score = MagicMock(side_effect=[float("-inf"), float("inf")])
+        coordinates = self.alpha_beta_player.alphabeta(node.execute(), DEPTH)
+
+        self.assertEquals(coordinates, (2, 1), 'The coordinates when no moves left is 2,1')
+
+    def test_return_the_move_with_max_of_min_values_with_leafs(self):
+        node = GameBuilder(self.player1, self.player1).create_game_tree(2, 2)
+
+        self.alpha_beta_player.score = MagicMock(side_effect=[float("-inf"),
+                                                              float("inf"), float("inf")])
+        coordinates = self.alpha_beta_player.alphabeta(node.execute(), DEPTH)
+
+        self.assertEquals(coordinates, (4, 1), 'The coordinates when no moves left is 4,1')
+
+    def test_return_the_max_of_min_value_of_the_score_two_nodes_with_other_nodes(self):
+        self.alpha_beta_player.score = MagicMock(
+            side_effect=[float("-inf"), float("inf"), float("-inf"), float("-inf"), float("-inf"), float("inf"),
+                         float("-inf"), float("inf")])
+
+        node = GameBuilder(self.player1, self.player1).create_game_tree(3, 2)
+        coordinates = self.alpha_beta_player.alphabeta(node.execute(), DEPTH)
+
+        self.assertEquals(coordinates, (8, 1), 'The coordinates is the max min coordinates value is (8,1)')
+
+    def test_search_until_level_two(self):
+        self.alpha_beta_player.score = MagicMock(
+            side_effect=[float("-inf"), float("inf"), float("-inf"), float("-inf")])
+
+        node = GameBuilder(self.player1, self.player1).create_game_tree(3, 2)
+
+        two_level_depth = 2
+        coordinates = self.alpha_beta_player.alphabeta(node.execute(), two_level_depth)
+
+        self.assertEquals(coordinates, (1, 0), 'The coordinates is the max min coordinates value is (1,0)')
+
+    def test_return_the_max_of_min_value_pruned(self):
+        self.alpha_beta_player.score = MagicMock(
+            side_effect=[float("5"), float("4"), float("6"), float("3"), float("1"), float("4")])
+
+        node = GameBuilder(self.player1, self.player1).create_game_tree(3, 2)
+        coordinates = self.alpha_beta_player.alphabeta(node.execute(), DEPTH)
+
+        self.assertEquals(coordinates, (1, 0), 'The coordinates is the max min coordinates value is (1,0)')
 
 
 class GameBuilder:
